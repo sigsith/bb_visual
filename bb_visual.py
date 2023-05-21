@@ -289,11 +289,7 @@ class Bitboard(tk.Frame):
         self.update_entries()
 
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Bitboard Visualization")
-
-    # List of font candidates
+def set_font():
     font_candidates = [
         "Source Code Pro",
         "SF Mono",
@@ -309,23 +305,22 @@ if __name__ == "__main__":
         "IBM Plex Mono",
         "DejaVu Sans Mono",
         "Andale Mono",
-        "Monospace",
         "Courier New",
     ]
-
-    # Find the first available font from the candidates
-    custom_font = None
     for font_candidate in font_candidates:
         if font_candidate in font.families():
-            custom_font = (font_candidate,)
-            break
+            return (font_candidate,)
+    return ("Monospace",)
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Bitboard Visualization")
+    custom_font = set_font()
     gui = Bitboard(root, U64(0), Endianness.A)
     gui.pack()
     root.update_idletasks()
     initial_width = root.winfo_width()
     initial_height = root.winfo_height()
-    root.minsize(
-        initial_width, initial_height
-    )  # Set the minimum size based on the initial size
-
+    root.minsize(initial_width, initial_height)
     gui.mainloop()
