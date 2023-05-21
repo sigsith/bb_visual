@@ -56,6 +56,7 @@ class Bitboard(tk.Frame):
 
         self.create_widgets()
         self.update_labels()
+        self.update_entries()
 
     def create_widgets(self):
         self.main_grid = tk.Frame(self)
@@ -115,13 +116,16 @@ class Bitboard(tk.Frame):
 
         # Create the hexadecimal entry
         self.hex_entry = tk.Entry(
-            self.main_grid, width=18, justify="center", font=custom_font
+            self.main_grid,
+            width=18,
+            justify="center",
+            font=custom_font,
         )
         self.hex_entry.grid()
 
         self.bottom_grid = tk.Frame(self.main_grid)
-        self.left_grid = tk.Frame(self.bottom_grid)
-        self.right_grid = tk.Frame(self.bottom_grid)
+        self.left_grid = tk.Frame(self.bottom_grid, padx=10)
+        self.right_grid = tk.Frame(self.bottom_grid, padx=10)
 
         # Create the endianness options
         self.endianness_label = tk.Label(self.left_grid, text="Endianness:")
@@ -136,7 +140,9 @@ class Bitboard(tk.Frame):
                 Endianness.D.value,
             ],
             textvariable=self.endianness,
+            state="readonly",
         )
+        self.endianness_combo.set(self.endianness.value)
         self.endianness_combo.grid()
         self.endianness_combo.bind("<<ComboboxSelected>>", self.update_combo)
 
@@ -144,27 +150,27 @@ class Bitboard(tk.Frame):
         self.reset_button = tk.Button(
             self.right_grid, text="Reset", command=self.reset_bitboard
         )
-        self.reset_button.grid(row=0, column=0)
+        self.reset_button.grid(row=0, column=0, sticky="ew")
 
         self.set_all_button = tk.Button(
             self.right_grid, text="Set All", command=self.set_all_bits
         )
-        self.set_all_button.grid(row=1, column=0)
+        self.set_all_button.grid(row=1, column=0, sticky="ew")
 
         self.inverse_button = tk.Button(
             self.right_grid, text="~", command=self.inverse_bitboard
         )
-        self.inverse_button.grid(row=0, column=1)
+        self.inverse_button.grid(row=0, column=1, sticky="ew")
 
         self.shift_left_button = tk.Button(
             self.right_grid, text="<<", command=self.shift_bits_left
         )
-        self.shift_left_button.grid(row=1, column=1)
+        self.shift_left_button.grid(row=1, column=1, sticky="ew")
 
         self.shift_right_button = tk.Button(
             self.right_grid, text=">>", command=self.shift_bits_right
         )
-        self.shift_right_button.grid(row=1, column=2)
+        self.shift_right_button.grid(row=1, column=2, sticky="ew")
         self.bottom_grid.grid(pady=25)
 
         # Bind events to update the bitboard when the entries change
@@ -174,8 +180,6 @@ class Bitboard(tk.Frame):
         self.right_grid.grid(row=0, column=1)
         self.bottom_grid.grid()
         self.main_grid.grid()
-
-        self.update_entries()
 
     def toggle_bit(self, row, col):
         # Toggle the corresponding bit on the bitboard
