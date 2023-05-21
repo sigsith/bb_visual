@@ -1,9 +1,38 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
+from enum import Enum
+
+
+class Endianness(Enum):
+    A = "rows: ↑, columns: →"
+    B = "rows: ↓, columns: →"
+    C = "rows: ↑, columns: ←"
+    D = "rows: ↓, columns: ←"
+
+
+class U64:
+    def __init__(self, value):
+        self.value = value & 0xFFFFFFFFFFFFFFFF
+
+    def __lshift__(self, other):
+        return U64(self.value << other)
+
+    def __rshift__(self, other):
+        return U64(self.value >> other)
+
+    def __invert__(self):
+        return U64(~self.value)
+
+    def __repr__(self):
+        return f"U64({self.value})"
+
+    def __str__(self):
+        return str(self.value)
+
 
 class Bitboard(tk.Frame):
-    def __init__(self, master, initial_bitboard):
+    def __init__(self, master, initial_bitboard: int, endianness: Endianness):
         super().__init__(master)
         self.bitboard = initial_bitboard
         self.endianness = tk.StringVar(value="0")  # Initialize with endianness 0
@@ -88,13 +117,16 @@ class Bitboard(tk.Frame):
         self.set_all_button = tk.Button(self, text="Set All", command=self.set_all_bits)
         self.set_all_button.pack()
 
+        self.inverse_button = tk.Button(self, text="~", command=self.inverse_bitboard)
+        self.inverse_button.pack()
+
         self.shift_left_button = tk.Button(
-            self, text="Shift Left", command=self.shift_bits_left
+            self, text="<<", command=self.shift_bits_left
         )
         self.shift_left_button.pack()
 
         self.shift_right_button = tk.Button(
-            self, text="Shift Right", command=self.shift_bits_right
+            self, text=">>", command=self.shift_bits_right
         )
         self.shift_right_button.pack()
 
@@ -134,9 +166,14 @@ class Bitboard(tk.Frame):
 
     def update_entries(self):
         # Update the hex and binary entries with the current bitboard value
+        self.update_hex_entry()
+        self.update_binary_entry()
+
+    def update_hex_entry(self):
         self.hex_entry.delete(0, tk.END)
         self.hex_entry.insert(tk.END, hex(self.bitboard))
 
+    def update_binary_entry(self):
         self.binary_entry.delete(0, tk.END)
         self.binary_entry.insert(tk.END, bin(self.bitboard))
 
@@ -150,6 +187,7 @@ class Bitboard(tk.Frame):
 
         self.update_labels()
         self.update_cell_colors()
+        self.update_binary_entry()
 
     def update_bitboard_from_binary(self, event):
         # Update the bitboard based on the binary entry value
@@ -161,11 +199,19 @@ class Bitboard(tk.Frame):
 
         self.update_labels()
         self.update_cell_colors()
+        self.update_hex_entry()
 
     def reset_bitboard(self):
         # Reset the bitboard to all zeros
         self.bitboard = 0
 
+        self.update_labels()
+        self.update_cell_colors()
+        self.update_entries()
+
+    def inverse_bitboard(self):
+        # Inverse the bitboard bitwise
+        self.bitboard = ~self.bitboard
         self.update_labels()
         self.update_cell_colors()
         self.update_entries()
@@ -206,7 +252,7 @@ class BitboardGUI(tk.Tk):
 
     def create_widgets(self):
         # Create the main 8x8 board
-        self.board = Bitboard(self, 0)  # Initialize with bitboard value 0
+        self.board = Bitboard(self, 0, Endianness.A)  # Initialize with bitboard value 0
         self.board.pack()
 
         # Create the add and delete buttons
@@ -220,7 +266,7 @@ class BitboardGUI(tk.Tk):
 
     def add_board(self):
         # Add a new visualization board
-        new_board = Bitboard(self, 0)  # Initialize with bitboard value 0
+        new_board = Bitboard(self, 0, Endianness.A)  # Initialize with bitboard value 0
         self.bitboards.append(new_board)
         new_board.pack()
 
