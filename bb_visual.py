@@ -24,15 +24,7 @@ class Endianness(Enum):
             return 7 - index
 
     def bit(self, row, col):
-        match self:
-            case Endianness.A:
-                return 1 << 8 * (7 - row) + col
-            case Endianness.B:
-                return 1 << 8 * row + col
-            case Endianness.C:
-                return 1 << 8 * (7 - row) + 7 - col
-            case Endianness.D:
-                return 1 << 8 * row + 7 - col
+        return 1 << 8 * self.row_label(row) + self.col_label(col)
 
 
 class U64:
@@ -192,10 +184,7 @@ class Bitboard(tk.Frame):
         # Toggle the corresponding bit on the bitboard
         bit = self.endianness.bit(row, col)
         self.bitboard.value ^= bit
-
-        self.update_labels()
-        self.update_cell_colors()
-        self.update_entries()
+        self.update_all()
 
     def update_combo(self, event=None):
         self.update_labels()
@@ -265,7 +254,6 @@ class Bitboard(tk.Frame):
             self.bitboard = U64(int(binary_value, 2))
         except ValueError:
             pass
-
         self.update_labels()
         self.update_cell_colors()
         self.update_hex_entry()
@@ -273,38 +261,29 @@ class Bitboard(tk.Frame):
     def reset_bitboard(self):
         # Reset the bitboard to all zeros
         self.bitboard = U64(0)
-
-        self.update_labels()
-        self.update_cell_colors()
-        self.update_entries()
+        self.update_all()
 
     def inverse_bitboard(self):
         # Inverse the bitboard bitwise
         self.bitboard = ~self.bitboard
-        self.update_labels()
-        self.update_cell_colors()
-        self.update_entries()
+        self.update_all()
 
     def set_all_bits(self):
         # Set all bits of the bitboard to ones
         self.bitboard = U64(0xFFFFFFFFFFFFFFFF)
-
-        self.update_labels()
-        self.update_cell_colors()
-        self.update_entries()
+        self.update_all()
 
     def shift_bits_left(self):
         # Shift all bits of the bitboard to the left
         self.bitboard <<= 1
-
-        self.update_labels()
-        self.update_cell_colors()
-        self.update_entries()
+        self.update_all()
 
     def shift_bits_right(self):
         # Shift all bits of the bitboard to the right
         self.bitboard >>= 1
+        self.update_all()
 
+    def update_all(self):
         self.update_labels()
         self.update_cell_colors()
         self.update_entries()
