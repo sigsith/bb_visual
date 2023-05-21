@@ -56,9 +56,9 @@ class U64:
 
 
 class Bitboard(tk.Frame):
-    def __init__(self, master, initial_bitboard: int, endianness: Endianness):
+    def __init__(self, master, bitboard: U64, endianness: Endianness):
         super().__init__(master)
-        self.bitboard = initial_bitboard
+        self.bitboard = bitboard
         # self.endianness = tk.StringVar(value="0")  # Initialize with endianness 0
         self.endianness = endianness
 
@@ -66,14 +66,17 @@ class Bitboard(tk.Frame):
         self.update_labels()
 
     def create_widgets(self):
+        self.main_grid = tk.Frame(self)
         # Create the binary entry
-        self.binary_entry = tk.Entry(self, width=66, justify="center", font=custom_font)
-        self.binary_entry.pack()
+        self.binary_entry = tk.Entry(
+            self.main_grid, width=66, justify="center", font=custom_font
+        )
+        self.binary_entry.grid()
         # Create the main 8x8 board
         self.canvas = tk.Canvas(
-            self, width=400, height=400, borderwidth=0, highlightthickness=0
+            self.main_grid, width=400, height=400, borderwidth=0, highlightthickness=0
         )
-        self.canvas.pack()
+        self.canvas.grid()
 
         self.cells = []
         cell_size = 40
@@ -118,16 +121,21 @@ class Bitboard(tk.Frame):
             self.cells.append(cell_row)
         self.update_cell_colors()
 
+        self.bottom_grid = tk.Frame(self.main_grid)
+        self.center_grid = tk.Frame(self.bottom_grid)
+
         # Create the hexadecimal entry
-        self.hex_entry = tk.Entry(self, width=18, justify="center", font=custom_font)
-        self.hex_entry.pack()
+        self.hex_entry = tk.Entry(
+            self.main_grid, width=18, justify="center", font=custom_font
+        )
+        self.hex_entry.grid(stick="ns")
 
         # Create the endianness options
-        self.endianness_label = tk.Label(self, text="Endianness:")
-        self.endianness_label.pack()
+        self.endianness_label = tk.Label(self.center_grid, text="Endianness:")
+        self.endianness_label.grid(sticky="ns")
 
         self.endianness_combo = ttk.Combobox(
-            self,
+            self.center_grid,
             values=[
                 Endianness.A.value,
                 Endianness.B.value,
@@ -136,37 +144,54 @@ class Bitboard(tk.Frame):
             ],
             textvariable=self.endianness,
         )
-        self.endianness_combo.pack()
+        self.endianness_combo.grid(sticky="ns")
         self.endianness_combo.bind("<<ComboboxSelected>>", self.update_combo)
 
+        self.center_grid.grid(row=0, column=1, sticky="ns")
+
+        self.left_grid = tk.Frame(self.bottom_grid)
+        self.right_grid = tk.Frame(self.bottom_grid)
+
         # Create the control buttons
-        self.reset_button = tk.Button(self, text="Reset", command=self.reset_bitboard)
-        self.reset_button.pack()
+        self.reset_button = tk.Button(
+            self.left_grid, text="Reset", command=self.reset_bitboard
+        )
+        self.reset_button.grid()
 
-        self.set_all_button = tk.Button(self, text="Set All", command=self.set_all_bits)
-        self.set_all_button.pack()
+        self.set_all_button = tk.Button(
+            self.left_grid, text="Set All", command=self.set_all_bits
+        )
+        self.set_all_button.grid()
+        self.left_grid.grid(row=0, column=0)
 
-        self.inverse_button = tk.Button(self, text="~", command=self.inverse_bitboard)
-        self.inverse_button.pack()
+        self.inverse_button = tk.Button(
+            self.right_grid, text="~ ", command=self.inverse_bitboard
+        )
+        self.inverse_button.grid(row=0, column=0)
 
         self.shift_left_button = tk.Button(
-            self, text="<<", command=self.shift_bits_left
+            self.right_grid, text="<<", command=self.shift_bits_left
         )
-        self.shift_left_button.pack()
+        self.shift_left_button.grid(row=1, column=0)
 
         self.shift_right_button = tk.Button(
-            self, text=">>", command=self.shift_bits_right
+            self.right_grid, text=">>", command=self.shift_bits_right
         )
-        self.shift_right_button.pack()
+        self.shift_right_button.grid(row=1, column=1)
+        self.right_grid.grid_rowconfigure(0, weight=2, uniform="buttons")
+        self.right_grid.grid_rowconfigure(1, weight=2, uniform="buttons")
+        self.right_grid.grid(row=0, column=2)
+        self.bottom_grid.grid(pady=25, sticky="ns")
 
         # Bind events to update the bitboard when the entries change
         self.hex_entry.bind("<KeyRelease>", self.update_bitboard_from_hex)
         self.binary_entry.bind("<KeyRelease>", self.update_bitboard_from_binary)
+        self.main_grid.pack()
 
     def toggle_bit(self, row, col):
         # Toggle the corresponding bit on the bitboard
         bit = self.endianness.bit(row, col)
-        self.bitboard ^= bit
+        self.bitboard.value ^= bit
 
         self.update_labels()
         self.update_cell_colors()
@@ -204,7 +229,7 @@ class Bitboard(tk.Frame):
         for row in range(8):
             for col in range(8):
                 bit = self.endianness.bit(row, col)
-                is_set = bool(self.bitboard & bit)
+                is_set = bool(self.bitboard.value & bit)
                 color = "black" if is_set else "white"
                 self.canvas.itemconfig(self.cells[row + 1][col + 1], fill=color)
 
@@ -215,17 +240,17 @@ class Bitboard(tk.Frame):
 
     def update_hex_entry(self):
         self.hex_entry.delete(0, tk.END)
-        self.hex_entry.insert(tk.END, hex(self.bitboard))
+        self.hex_entry.insert(tk.END, hex(self.bitboard.value))
 
     def update_binary_entry(self):
         self.binary_entry.delete(0, tk.END)
-        self.binary_entry.insert(tk.END, bin(self.bitboard))
+        self.binary_entry.insert(tk.END, bin(self.bitboard.value))
 
     def update_bitboard_from_hex(self, event):
         # Update the bitboard based on the hex entry value
         try:
             hex_value = self.hex_entry.get()
-            self.bitboard = int(hex_value, 16)
+            self.bitboard = U64(int(hex_value, 16))
         except ValueError:
             pass
 
@@ -237,7 +262,7 @@ class Bitboard(tk.Frame):
         # Update the bitboard based on the binary entry value
         try:
             binary_value = self.binary_entry.get()
-            self.bitboard = int(binary_value, 2)
+            self.bitboard = U64(int(binary_value, 2))
         except ValueError:
             pass
 
@@ -247,7 +272,7 @@ class Bitboard(tk.Frame):
 
     def reset_bitboard(self):
         # Reset the bitboard to all zeros
-        self.bitboard = 0
+        self.bitboard = U64(0)
 
         self.update_labels()
         self.update_cell_colors()
@@ -262,7 +287,7 @@ class Bitboard(tk.Frame):
 
     def set_all_bits(self):
         # Set all bits of the bitboard to ones
-        self.bitboard = 0xFFFFFFFFFFFFFFFF
+        self.bitboard = U64(0xFFFFFFFFFFFFFFFF)
 
         self.update_labels()
         self.update_cell_colors()
@@ -315,6 +340,13 @@ if __name__ == "__main__":
         if font_candidate in font.families():
             custom_font = (font_candidate,)
             break
-    gui = Bitboard(root, 0, Endianness.A)
+    gui = Bitboard(root, U64(0), Endianness.A)
     gui.pack()
+    root.update_idletasks()
+    initial_width = root.winfo_width()
+    initial_height = root.winfo_height()
+    root.minsize(
+        initial_width, initial_height
+    )  # Set the minimum size based on the initial size
+
     gui.mainloop()
