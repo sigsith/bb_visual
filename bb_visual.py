@@ -113,21 +113,22 @@ class Bitboard(tk.Frame):
             self.cells.append(cell_row)
         self.update_cell_colors()
 
-        self.bottom_grid = tk.Frame(self.main_grid)
-        self.center_grid = tk.Frame(self.bottom_grid)
-
         # Create the hexadecimal entry
         self.hex_entry = tk.Entry(
             self.main_grid, width=18, justify="center", font=custom_font
         )
-        self.hex_entry.grid(stick="ns")
+        self.hex_entry.grid()
+
+        self.bottom_grid = tk.Frame(self.main_grid)
+        self.left_grid = tk.Frame(self.bottom_grid)
+        self.right_grid = tk.Frame(self.bottom_grid)
 
         # Create the endianness options
-        self.endianness_label = tk.Label(self.center_grid, text="Endianness:")
-        self.endianness_label.grid(sticky="ns")
+        self.endianness_label = tk.Label(self.left_grid, text="Endianness:")
+        self.endianness_label.grid()
 
         self.endianness_combo = ttk.Combobox(
-            self.center_grid,
+            self.left_grid,
             values=[
                 Endianness.A.value,
                 Endianness.B.value,
@@ -136,49 +137,45 @@ class Bitboard(tk.Frame):
             ],
             textvariable=self.endianness,
         )
-        self.endianness_combo.grid(sticky="ns")
+        self.endianness_combo.grid()
         self.endianness_combo.bind("<<ComboboxSelected>>", self.update_combo)
-
-        self.center_grid.grid(row=0, column=1, sticky="ns")
-
-        self.left_grid = tk.Frame(self.bottom_grid)
-        self.right_grid = tk.Frame(self.bottom_grid)
 
         # Create the control buttons
         self.reset_button = tk.Button(
-            self.left_grid, text="Reset", command=self.reset_bitboard
+            self.right_grid, text="Reset", command=self.reset_bitboard
         )
-        self.reset_button.grid()
+        self.reset_button.grid(row=0, column=0)
 
         self.set_all_button = tk.Button(
-            self.left_grid, text="Set All", command=self.set_all_bits
+            self.right_grid, text="Set All", command=self.set_all_bits
         )
-        self.set_all_button.grid()
-        self.left_grid.grid(row=0, column=0)
+        self.set_all_button.grid(row=1, column=0)
 
         self.inverse_button = tk.Button(
-            self.right_grid, text="~ ", command=self.inverse_bitboard
+            self.right_grid, text="~", command=self.inverse_bitboard
         )
-        self.inverse_button.grid(row=0, column=0)
+        self.inverse_button.grid(row=0, column=1)
 
         self.shift_left_button = tk.Button(
             self.right_grid, text="<<", command=self.shift_bits_left
         )
-        self.shift_left_button.grid(row=1, column=0)
+        self.shift_left_button.grid(row=1, column=1)
 
         self.shift_right_button = tk.Button(
             self.right_grid, text=">>", command=self.shift_bits_right
         )
-        self.shift_right_button.grid(row=1, column=1)
-        self.right_grid.grid_rowconfigure(0, weight=2, uniform="buttons")
-        self.right_grid.grid_rowconfigure(1, weight=2, uniform="buttons")
-        self.right_grid.grid(row=0, column=2)
-        self.bottom_grid.grid(pady=25, sticky="ns")
+        self.shift_right_button.grid(row=1, column=2)
+        self.bottom_grid.grid(pady=25)
 
         # Bind events to update the bitboard when the entries change
         self.hex_entry.bind("<KeyRelease>", self.update_bitboard_from_hex)
         self.binary_entry.bind("<KeyRelease>", self.update_bitboard_from_binary)
-        self.main_grid.pack()
+        self.left_grid.grid(row=0, column=0)
+        self.right_grid.grid(row=0, column=1)
+        self.bottom_grid.grid()
+        self.main_grid.grid()
+
+        self.update_entries()
 
     def toggle_bit(self, row, col):
         # Toggle the corresponding bit on the bitboard
@@ -318,7 +315,7 @@ if __name__ == "__main__":
     root.title("Bitboard Visualization")
     custom_font = set_font()
     gui = Bitboard(root, U64(0), Endianness.A)
-    gui.pack()
+    gui.grid()
     root.update_idletasks()
     initial_width = root.winfo_width()
     initial_height = root.winfo_height()
