@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import font
 import tkinter.ttk as ttk
 
 from enum import Enum
@@ -41,6 +42,9 @@ class Bitboard(tk.Frame):
         self.update_labels()
 
     def create_widgets(self):
+        # Create the binary entry
+        self.binary_entry = tk.Entry(self, width=66, justify="center", font=custom_font)
+        self.binary_entry.pack()
         # Create the main 8x8 board
         self.canvas = tk.Canvas(
             self, width=400, height=400, borderwidth=0, highlightthickness=0
@@ -70,12 +74,8 @@ class Bitboard(tk.Frame):
         self.update_cell_colors()
 
         # Create the hexadecimal entry
-        self.hex_entry = tk.Entry(self)
+        self.hex_entry = tk.Entry(self, width=18, justify="center", font=custom_font)
         self.hex_entry.pack()
-
-        # Create the binary entry
-        self.binary_entry = tk.Entry(self)
-        self.binary_entry.pack()
 
         # Create the endianness options
         self.endianness_label = tk.Label(self, text="Endianness:")
@@ -241,11 +241,9 @@ class Bitboard(tk.Frame):
         self.update_entries()
 
 
-class BitboardGUI(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Bitboard Visualization")
-
+class BitboardGUI(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
         self.bitboards = []  # List to store multiple boards
 
         self.create_widgets()
@@ -278,5 +276,35 @@ class BitboardGUI(tk.Tk):
 
 
 if __name__ == "__main__":
-    gui = BitboardGUI()
+    root = tk.Tk()
+    root.title("Bitboard Visualization")
+
+    # List of font candidates
+    font_candidates = [
+        "Source Code Pro",
+        "SF Mono",
+        "Menlo",
+        "Consolas",
+        "Roboto Mono",
+        "Noto Sans Mono",
+        "JetBrains Mono",
+        "Liberation Mono",
+        "Hack",
+        "Fira Code",
+        "Ubuntu Mono",
+        "IBM Plex Mono",
+        "DejaVu Sans Mono",
+        "Andale Mono",
+        "Monospace",
+        "Courier New",
+    ]
+
+    # Find the first available font from the candidates
+    custom_font = None
+    for font_candidate in font_candidates:
+        if font_candidate in font.families():
+            custom_font = (font_candidate,)
+            break
+    gui = BitboardGUI(root)
+    gui.pack()
     gui.mainloop()
