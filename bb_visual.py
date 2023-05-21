@@ -51,7 +51,6 @@ class Bitboard(tk.Frame):
     def __init__(self, master, bitboard: U64, endianness: Endianness):
         super().__init__(master)
         self.bitboard = bitboard
-        # self.endianness = tk.StringVar(value="0")  # Initialize with endianness 0
         self.endianness = endianness
 
         self.create_widgets()
@@ -67,7 +66,8 @@ class Bitboard(tk.Frame):
         self.binary_entry.grid()
         # Create the main 8x8 board
         self.canvas = tk.Canvas(
-            self.main_grid, width=400, height=400, borderwidth=0, highlightthickness=0
+            self.main_grid, width=400, height=400, borderwidth=0,
+            highlightthickness=0
         )
         self.canvas.grid()
 
@@ -107,7 +107,8 @@ class Bitboard(tk.Frame):
                     self.canvas.tag_bind(
                         cell,
                         "<Button-1>",
-                        lambda event, r=row - 1, c=col - 1: self.toggle_bit(r, c),
+                        lambda event, r=row - 1, c=col - 1: self.toggle_bit(r,
+                                                                            c),
                     )
                     cell_row.append(cell)
 
@@ -139,7 +140,6 @@ class Bitboard(tk.Frame):
                 Endianness.C.value,
                 Endianness.D.value,
             ],
-            textvariable=self.endianness,
             state="readonly",
         )
         self.endianness_combo.set(self.endianness.value)
@@ -243,7 +243,6 @@ class Bitboard(tk.Frame):
             self.bitboard = U64(int(hex_value, 16))
         except ValueError:
             pass
-
         self.update_labels()
         self.update_cell_colors()
         self.update_binary_entry()
@@ -310,8 +309,8 @@ def set_font():
     ]
     for font_candidate in font_candidates:
         if font_candidate in font.families():
-            return (font_candidate,)
-    return ("Monospace",)
+            return font_candidate,
+    return "Monospace",
 
 
 if __name__ == "__main__":
