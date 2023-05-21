@@ -6,6 +6,7 @@
 * Tkinter
 
 ## Features
+* Mouse click toggles individual bits
 * Synchronizes binary, hexadecimal, and board representations
 * Supports all four types of endianness
 * Basic bitboard operations
