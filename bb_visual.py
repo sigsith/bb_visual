@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import font
 import tkinter.ttk as ttk
+import copy
 
 from enum import Enum
 
@@ -66,8 +67,7 @@ class Bitboard(tk.Frame):
         self.binary_entry.grid()
         # Create the main 8x8 board
         self.canvas = tk.Canvas(
-            self.main_grid, width=400, height=400, borderwidth=0,
-            highlightthickness=0
+            self.main_grid, width=400, height=400, borderwidth=0, highlightthickness=0
         )
         self.canvas.grid()
 
@@ -107,8 +107,7 @@ class Bitboard(tk.Frame):
                     self.canvas.tag_bind(
                         cell,
                         "<Button-1>",
-                        lambda event, r=row - 1, c=col - 1: self.toggle_bit(r,
-                                                                            c),
+                        lambda event, r=row - 1, c=col - 1: self.toggle_bit(r, c),
                     )
                     cell_row.append(cell)
 
@@ -166,6 +165,11 @@ class Bitboard(tk.Frame):
             self.right_grid, text="<<", command=self.shift_bits_left
         )
         self.shift_left_button.grid(row=1, column=1, sticky="ew")
+
+        self.new_window_button = tk.Button(
+            self.right_grid, text="nw", command=self.new_window
+        )
+        self.new_window_button.grid(row=0, column=2, sticky="ew")
 
         self.shift_right_button = tk.Button(
             self.right_grid, text=">>", command=self.shift_bits_right
@@ -288,6 +292,13 @@ class Bitboard(tk.Frame):
         self.update_cell_colors()
         self.update_entries()
 
+    def new_window(self):
+        new_window = tk.Toplevel(root)
+        new_window.title("Bitboard Visualization")
+        Bitboard(
+            new_window, copy.deepcopy(self.bitboard), copy.deepcopy(self.endianness)
+        ).grid()
+
 
 def set_font():
     font_candidates = [
@@ -309,8 +320,8 @@ def set_font():
     ]
     for font_candidate in font_candidates:
         if font_candidate in font.families():
-            return font_candidate,
-    return "Monospace",
+            return (font_candidate,)
+    return ("Monospace",)
 
 
 if __name__ == "__main__":
